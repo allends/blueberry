@@ -27,6 +27,7 @@ fn main() {
         match stream {
             Ok(mut _stream) => {
                 println!("accepted new connection");
+                parse_request(&mut _stream);
                 let mut buffer: [u8; 512] = [0u8; 512];
                 let bytes_read = _stream.read(&mut buffer).unwrap();
                 send_message(&mut _stream, "HTTP/1.1 200 OK\r\n\r\n");
