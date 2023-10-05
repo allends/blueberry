@@ -37,8 +37,6 @@ fn main() {
         match stream {
             Ok(mut _stream) => {
                 println!("accepted new connection");
-                parse_request(&mut _stream);
-                let mut buffer: [u8; 512] = [0u8; 512];
                 let request = parse_request(&mut _stream);
                 let path = get_path(&request);
                 if path == "/" {
