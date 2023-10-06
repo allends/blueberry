@@ -32,7 +32,7 @@ fn echo_request(stream: &mut TcpStream, request: String) {
     Content-Type: text/plain\r\n\
     Content-Length: {}\r\n\
     \r\n\
-    {}\r\n", payload.len(), payload);
+    {}", payload.len(), payload);
     println!("{}", message);
     send_message(stream, &message);
 }
