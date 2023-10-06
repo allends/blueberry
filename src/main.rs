@@ -40,7 +40,7 @@ fn echo_request(stream: &mut TcpStream, request: String) {
 
 fn route_request(stream: &mut TcpStream) {
     let request = parse_request(stream);
-    let path = get_path(&request);
+    let path = get_path(&request).split("/").nth(1).unwrap_or("");
     match path {
         "/" => send_message(stream, "HTTP/1.1 200 OK\r\n\r\n"),
         "/echo" => echo_request(stream, request),
