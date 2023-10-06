@@ -1,6 +1,7 @@
 // Uncomment this block to pass the first stage
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
+use std::path;
 
 fn send_message(stream: &mut TcpStream, message: &str) {
     stream.write(message.as_bytes()).unwrap();
@@ -39,11 +40,9 @@ fn echo_request(stream: &mut TcpStream, request: String) {
 
 fn route_request(stream: &mut TcpStream) {
     let request = parse_request(stream);
-    let raw_path = get_path(&request);
-    println!("raw_path: {}", raw_path);
-    let path = raw_path.split("/").take(2).collect::<Vec<&str>>().join("");
+    let mut path = "/".to_owned();
+    path.push_str(get_path(&request).split("/").nth(1).unwrap_or(""));
     let path = path.as_str();
-    println!("path: {}", path);
     match path {
         "/" => send_message(stream, "HTTP/1.1 200 OK\r\n\r\n"),
         "/echo" => echo_request(stream, request),
