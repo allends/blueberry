@@ -28,11 +28,11 @@ fn parse_request(stream: &mut TcpStream) -> String {
 fn echo_request(stream: &mut TcpStream, request: String) {
     let path = get_path(&request);
     let payload = path.split("/").nth(3).unwrap_or("");
-    let message = format!("HTTP/1.1 200 OK\r\n\\
-    Content-Type: text/plain\r\n\\
-    Content-Length: {}\r\n\\
-    \r\n\\
-    {}/r/n/r/n", payload.len(), payload);
+    let message = format!("HTTP/1.1 200 OK\r\n\
+    Content-Type: text/plain\r\n\
+    Content-Length: {}\r\n\
+    \r\n\
+    {}\r\n", payload.len(), payload);
     println!("{}", message);
     send_message(stream, &message);
 }
