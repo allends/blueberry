@@ -35,6 +35,7 @@ fn echo_request(stream: &mut TcpStream, request: String) {
     \r\n\
     {}
     /r/n/r/n", payload.len(), payload);
+    println!("{}", message);
     send_message(stream, &message);
 }
 
