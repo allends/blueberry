@@ -25,6 +25,29 @@ fn parse_request(stream: &mut TcpStream) -> String {
     return request.to_string();
 }
 
+fn echo_request(stream: &mut TcpStream, request: String) {
+    let path = get_path(&request);
+    let payload = path.split("/").nth(3).unwrap_or("");
+    let message = format!("
+    HTTP/1.1 200 OK\r\n\
+    Content-Type: text/plain\r\n\
+    Content-Length: {}\r\n\
+    \r\n\
+    {}
+    /r/n/r/n", payload.len(), payload);
+    send_message(stream, &message);
+}
+
+fn route_request(stream: &mut TcpStream) {
+    let request = parse_request(stream);
+    let path = get_path(&request);
+    match path {
+        "/" => send_message(stream, "HTTP/1.1 200 OK\r\n\r\n"),
+        "/echo" => echo_request(stream, request),
+        _ => send_message(stream, "HTTP/1.1 404 Not Found\r\n\r\n"),
+    }
+}
+
 fn main() {
     // You can use print statements as follows for debugging, they'll be visible when running tests.
     println!("Logs from your program will appear here!");
@@ -37,14 +60,7 @@ fn main() {
         match stream {
             Ok(mut _stream) => {
                 println!("accepted new connection");
-                let request = parse_request(&mut _stream);
-                let path = get_path(&request);
-                if path == "/" {
-                    send_message(&mut _stream, "HTTP/1.1 200 OK\r\n\r\n");
-                } else {
-                    send_message(&mut _stream, "HTTP/1.1 404 Not Found\r\n\r\n");
-
-                }
+                route_request(&mut _stream);
             }
             Err(e) => {
                 println!("error: {}", e);
