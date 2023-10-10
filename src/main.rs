@@ -51,6 +51,7 @@ impl Router {
         let path = get_path(&request);
         for route in &self.routes {
             let index = route.path.find(path).unwrap_or(1);
+            println!("{} - {} match ? {}", route.path, path, index);
             if index == 0 {
                 (route.handler)(stream, request);
                 return;
