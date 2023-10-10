@@ -57,6 +57,7 @@ impl Router {
         let path = get_path(&request);
         for route in &self.routes {
             let index = path.find(route.path.as_str()).unwrap_or(1);
+            println!("{} {} {}", path, route.path, index);
             if index == 0 {
                 (route.handler)(stream, request);
                 return;
