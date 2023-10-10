@@ -70,11 +70,7 @@ fn routes_match(path: &str, route: &str) -> bool {
     let path_parts: Vec<&str> = path.split("/").collect();
     let route_parts: Vec<&str> = route.split("/").collect();
 
-    if path_parts.len() != route_parts.len() {
-        return false;
-    }
-
-    for (path_part, route_part) in path_parts.iter().zip(route_parts.iter()) {
+    for (path_part, route_part) in route_parts.iter().zip(path_parts.iter()) {
         if !route_part.starts_with(":") && path_part != route_part {
             return false;
         }
