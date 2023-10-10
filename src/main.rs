@@ -121,7 +121,7 @@ async fn main()  -> anyhow::Result<()> {
         \r\n\
         {}", trimmed.len(), trimmed);
         send_message(stream, &message);
-    });
+    }); 
 
     router.add_route("/user-agent", |stream, request| {
         let headers = get_headers(request);
