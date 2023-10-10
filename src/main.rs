@@ -33,7 +33,7 @@ fn get_headers(request: String) -> HashMap<String, String> {
         if line.contains(":") {
             let parts: Vec<&str> = line.split(":").collect();
             let key = parts[0].to_string();
-            let value = parts[1].to_string();
+            let value = parts[1].to_string().trim().to_owned();
             headers.insert(key, value);
         }
     }
