@@ -97,7 +97,8 @@ fn routes_match(path: &str, route: &str) -> bool {
     true
 }
 
-fn main() {
+#[tokio::main]
+async fn main()  -> anyhow::Result<()> {
     // You can use print statements as follows for debugging, they'll be visible when running tests.
     println!("Logs from your program will appear here!");
 
@@ -149,4 +150,6 @@ fn main() {
         });
         
     }
+
+    return Ok(());
 }
