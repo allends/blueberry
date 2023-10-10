@@ -38,15 +38,15 @@ fn get_headers(request: String) -> HashMap<String, String> {
         }
     }
 
-    println!("{:#?}", headers);
-
     return headers;
 }
 
+#[derive(Clone)]
 struct Router {
     routes: Vec<Route>,
 }
 
+#[derive(Clone)]
 struct Route {
     path: String,
     handler: fn(&mut TcpStream, String),
@@ -135,14 +135,18 @@ fn main() {
     });
 
     for stream in listener.incoming() {
-        match stream {
-            Ok(mut _stream) => {
-                println!("accepted new connection");
-                router.route_request(&mut _stream);
+        let other_router = router.clone();
+        tokio::task::spawn(async move {
+            match stream {
+                Ok(mut _stream) => {
+                    println!("accepted new connection");
+                    other_router.route_request(&mut _stream);
+                }
+                Err(e) => {
+                    println!("error: {}", e);
+                }
             }
-            Err(e) => {
-                println!("error: {}", e);
-            }
-        }
+        });
+        
     }
 }
