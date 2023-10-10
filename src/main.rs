@@ -96,12 +96,13 @@ fn main() {
 
     router.add_route("/echo/:input", |stream, request| {
         let path = get_path(&request);
-        let payload = path.split("/echo").nth(1).unwrap_or("");
+        let payload = path.split("/echo").nth(1).unwrap_or("").to_owned();
+        let trimmed = &payload[1..];
         let message = format!("HTTP/1.1 200 OK\r\n\
         Content-Type: text/plain\r\n\
         Content-Length: {}\r\n\
         \r\n\
-        {}", payload.len(), payload);
+        {}", trimmed.len(), trimmed);
         println!("{}", message);
         send_message(stream, &message);
     });
