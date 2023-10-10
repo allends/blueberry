@@ -1,7 +1,7 @@
+use std::collections::HashMap;
 // Uncomment this block to pass the first stage
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
-use std::path;
 
 fn send_message(stream: &mut TcpStream, message: &str) {
     stream.write(message.as_bytes()).unwrap();
@@ -23,6 +23,22 @@ fn parse_request(stream: &mut TcpStream) -> String {
     let bytes_read = stream.read(&mut buffer).unwrap();
     let request = String::from_utf8_lossy(&buffer[..bytes_read]);
     return request.to_string();
+}
+
+fn get_headers(request: String) -> HashMap<String, String> {
+    let mut headers: HashMap<String, String> = HashMap::new();
+    let lines = request.split("\r\n");
+
+    for line in lines {
+        if line.contains(":") {
+            let parts: Vec<&str> = line.split(":").collect();
+            let key = parts[0].to_string();
+            let value = parts[1].to_string();
+            headers.insert(key, value);
+        }
+    }
+
+    return headers;
 }
 
 struct Router {
@@ -103,6 +119,18 @@ fn main() {
         Content-Length: {}\r\n\
         \r\n\
         {}", trimmed.len(), trimmed);
+        println!("{}", message);
+        send_message(stream, &message);
+    });
+
+    router.add_route("/user-agent", |stream, request| {
+        let headers = get_headers(request);
+        let user_agent = headers.get("User-Agent").unwrap();
+        let message = format!("HTTP/1.1 200 OK\r\n\
+        Content-Type: text/plain\r\n\
+        Content-Length: {}\r\n\
+        \r\n\
+        {}", user_agent.len(), user_agent);
         println!("{}", message);
         send_message(stream, &message);
     });
