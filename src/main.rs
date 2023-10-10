@@ -39,19 +39,24 @@ impl Router {
         Router { routes: Vec::new() }
     }
 
+    fn sort_routes(&mut self) {
+        self.routes.sort_by(|a, b| b.path.len().cmp(&a.path.len()));
+    }
+
     fn add_route(&mut self, path: &str, handler: fn(&mut TcpStream, String)) {
         self.routes.push(Route {
             path: path.to_string(),
             handler,
         });
+
+        self.sort_routes();
     }
 
     fn route_request(&self, stream: &mut TcpStream) {
         let request = parse_request(stream);
         let path = get_path(&request);
         for route in &self.routes {
-            let index = route.path.find(path).unwrap_or(1);
-            println!("{} - {} match ? {}", route.path, path, index);
+            let index = path.find(route.path.as_str()).unwrap_or(1);
             if index == 0 {
                 (route.handler)(stream, request);
                 return;
