@@ -56,15 +56,31 @@ impl Router {
         let request = parse_request(stream);
         let path = get_path(&request);
         for route in &self.routes {
-            let index = path.find(route.path.as_str()).unwrap_or(1);
-            println!("{} {} {}", path, route.path, index);
-            if index == 0 {
+            if routes_match(path, route.path.as_str()) {
                 (route.handler)(stream, request);
                 return;
             }
+
         }
         send_message(stream, "HTTP/1.1 404 Not Found\r\n\r\n");
     }
+}
+
+fn routes_match(path: &str, route: &str) -> bool {
+    let path_parts: Vec<&str> = path.split("/").collect();
+    let route_parts: Vec<&str> = route.split("/").collect();
+
+    if path_parts.len() != route_parts.len() {
+        return false;
+    }
+
+    for (path_part, route_part) in path_parts.iter().zip(route_parts.iter()) {
+        if !route_part.starts_with(":") && path_part != route_part {
+            return false;
+        }
+    }
+
+    true
 }
 
 fn main() {
@@ -80,7 +96,7 @@ fn main() {
         send_message(stream, "HTTP/1.1 200 OK\r\n\r\n");
     });
 
-    router.add_route("/echo", |stream, request| {
+    router.add_route("/echo/:input", |stream, request| {
         let path = get_path(&request);
         let payload = path.split("/echo").nth(1).unwrap_or("");
         let message = format!("HTTP/1.1 200 OK\r\n\
