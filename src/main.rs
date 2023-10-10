@@ -25,27 +25,38 @@ fn parse_request(stream: &mut TcpStream) -> String {
     return request.to_string();
 }
 
-fn echo_request(stream: &mut TcpStream, request: String) {
-    let path = get_path(&request);
-    let payload = path.split("/").nth(3).unwrap_or("");
-    let message = format!("HTTP/1.1 200 OK\r\n\
-    Content-Type: text/plain\r\n\
-    Content-Length: {}\r\n\
-    \r\n\
-    {}", payload.len(), payload);
-    println!("{}", message);
-    send_message(stream, &message);
+struct Router {
+    routes: Vec<Route>,
 }
 
-fn route_request(stream: &mut TcpStream) {
-    let request = parse_request(stream);
-    let mut path = "/".to_owned();
-    path.push_str(get_path(&request).split("/").nth(1).unwrap_or(""));
-    let path = path.as_str();
-    match path {
-        "/" => send_message(stream, "HTTP/1.1 200 OK\r\n\r\n"),
-        "/echo" => echo_request(stream, request),
-        _ => send_message(stream, "HTTP/1.1 404 Not Found\r\n\r\n"),
+struct Route {
+    path: String,
+    handler: fn(&mut TcpStream, String),
+}
+
+impl Router {
+    fn new() -> Router {
+        Router { routes: Vec::new() }
+    }
+
+    fn add_route(&mut self, path: &str, handler: fn(&mut TcpStream, String)) {
+        self.routes.push(Route {
+            path: path.to_string(),
+            handler,
+        });
+    }
+
+    fn route_request(&self, stream: &mut TcpStream) {
+        let request = parse_request(stream);
+        let path = get_path(&request);
+        for route in &self.routes {
+            let index = route.path.find(path).unwrap_or(1);
+            if index == 0 {
+                (route.handler)(stream, request);
+                return;
+            }
+        }
+        send_message(stream, "HTTP/1.1 404 Not Found\r\n\r\n");
     }
 }
 
@@ -56,12 +67,29 @@ fn main() {
     // Uncomment this block to pass the first stage
     //
     let listener = TcpListener::bind("127.0.0.1:4221").unwrap();
+    let mut router = Router::new();
+
+    router.add_route("/", |stream, _| {
+        send_message(stream, "HTTP/1.1 200 OK\r\n\r\n");
+    });
+
+    router.add_route("/echo", |stream, request| {
+        let path = get_path(&request);
+        let payload = path.split("/echo").nth(1).unwrap_or("");
+        let message = format!("HTTP/1.1 200 OK\r\n\
+        Content-Type: text/plain\r\n\
+        Content-Length: {}\r\n\
+        \r\n\
+        {}", payload.len(), payload);
+        println!("{}", message);
+        send_message(stream, &message);
+    });
 
     for stream in listener.incoming() {
         match stream {
             Ok(mut _stream) => {
                 println!("accepted new connection");
-                route_request(&mut _stream);
+                router.route_request(&mut _stream);
             }
             Err(e) => {
                 println!("error: {}", e);
