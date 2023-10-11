@@ -154,6 +154,7 @@ fn get_params(path: &str, route: &str) -> HashMap<String, String> {
 async fn main()  -> anyhow::Result<()> {
     // You can use print statements as follows for debugging, they'll be visible when running tests.
     println!("Logs from your program will appear here!");
+    println!("env args {:?}", std::env::args().collect::<Vec<String>>());
 
     // Uncomment this block to pass the first stage
     //
@@ -187,10 +188,6 @@ async fn main()  -> anyhow::Result<()> {
         println!("{}", message);
         send_message(stream, &message);
     }, None);
-
-    for arg in std::env::args() {
-        println!("{}", arg);
-    }
     
     let dir = std::env::args().nth(3);
 
