@@ -156,6 +156,11 @@ async fn main()  -> anyhow::Result<()> {
     println!("Logs from your program will appear here!");
     println!("env args {:?}", std::env::args().collect::<Vec<String>>());
 
+    let argvec = std::env::args().collect::<Vec<String>>();
+    let mut argiter = argvec.iter();
+    argiter.find(|arg| arg.as_str().eq("--directory"));
+    let path = argiter.next();
+
     // Uncomment this block to pass the first stage
     //
     let listener = TcpListener::bind("127.0.0.1:4221").unwrap();
@@ -188,12 +193,10 @@ async fn main()  -> anyhow::Result<()> {
         println!("{}", message);
         send_message(stream, &message);
     }, None);
-    
-    let dir = std::env::args().nth(3);
 
-    if let Some(target_dir) = dir {
+    if let Some(target_dir) = path {
         let mut map: HashMap<String, String> = HashMap::new();
-        map.insert("dir".to_string(), target_dir);
+        map.insert("dir".to_string(), target_dir.clone());
         router.add_route("/files/:path", |stream, _request, state, params| {
             println!("starting to get the file");
             let state_dict = state.unwrap();
