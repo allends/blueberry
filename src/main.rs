@@ -211,7 +211,7 @@ async fn main()  -> anyhow::Result<()> {
                 Err(_) => not_found(stream),
             }
         }, Some(map));
-    }
+    } 
 
     for stream in listener.incoming() {
         let other_router = router.clone();
