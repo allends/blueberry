@@ -192,11 +192,12 @@ async fn main()  -> anyhow::Result<()> {
     if let Some(target_dir) = dir {
         let mut map: HashMap<String, String> = HashMap::new();
         map.insert("dir".to_string(), target_dir);
-        router.add_route("/files/:path", |stream, request, state, params| {
+        router.add_route("/files/:path", |stream, _request, state, params| {
             let state_dict = state.unwrap();
             let dir_string = state_dict.get("dir").unwrap();
             let path = params.get("path").unwrap();
             let file = std::fs::File::open(dir_string.to_owned() + path);
+            println!("{:?}", file);
             match file {
                 Ok(suc) => {
                     println!("{:?}", suc);
