@@ -197,7 +197,7 @@ async fn main()  -> anyhow::Result<()> {
             let dir_string = state_dict.get("dir").unwrap();
             let path = params.get("path").unwrap();
             let file = std::fs::File::open(dir_string.to_owned() + path);
-            println!("{:?}", file);
+            println!("{:?}", file); 
             match file {
                 Ok(suc) => {
                     println!("{:?}", suc);
