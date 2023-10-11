@@ -41,6 +41,14 @@ fn get_headers(request: String) -> HashMap<String, String> {
     return headers;
 }
 
+fn not_found(stream: &mut TcpStream) {
+    send_message(stream, "HTTP/1.1 404 Not Found\r\n\r\n");
+}
+
+type RouteState = Option<HashMap<String, String>>;
+type Params = HashMap<String, String>;
+type RouteHandler = fn(&mut TcpStream, String, RouteState, Params);
+
 #[derive(Clone)]
 struct Router {
     routes: Vec<Route>,
@@ -49,7 +57,8 @@ struct Router {
 #[derive(Clone)]
 struct Route {
     path: String,
-    handler: fn(&mut TcpStream, String),
+    handler: RouteHandler,
+    state: Option<HashMap<String, String>>,
 }
 
 impl Router {
@@ -61,10 +70,11 @@ impl Router {
         self.routes.sort_by(|a, b| b.path.len().cmp(&a.path.len()));
     }
 
-    fn add_route(&mut self, path: &str, handler: fn(&mut TcpStream, String)) {
+    fn add_route(&mut self, path: &str, handler: RouteHandler, state: Option<HashMap<String, String>>) {
         self.routes.push(Route {
             path: path.to_string(),
             handler,
+            state,
         });
 
         self.sort_routes();
@@ -73,9 +83,11 @@ impl Router {
     fn route_request(&self, stream: &mut TcpStream) {
         let request = parse_request(stream);
         let path = get_path(&request);
+
         for route in &self.routes {
             if routes_match(path, route.path.as_str()) {
-                (route.handler)(stream, request);
+                let params = get_params(path, &route.path);
+                (route.handler)(stream, request, route.state.clone(), params);
                 return;
             }
 
@@ -97,6 +109,45 @@ fn routes_match(path: &str, route: &str) -> bool {
     true
 }
 
+fn get_params(path: &str, route: &str) -> HashMap<String, String> {
+    let mut result = HashMap::new();
+    let path_parts: Vec<&str> = path.split("/").collect();
+    let route_parts: Vec<&str> = route.split("/").collect();
+
+    let mut current = 0;
+    let mut trailing: Option<String> = None;
+    let length = route_parts.len();
+
+    while current < length {
+        let path_part = path_parts.get(current).unwrap();
+        let route_part = route_parts.get(current).unwrap();
+        if route_part.starts_with(":") {
+            let var_name = &route_part[1..];
+            result.insert(var_name.to_string(), path_part.to_string());
+            trailing = Some(var_name.to_string());
+        } else{
+            trailing = None;
+        }
+        current += 1;
+    }
+
+    if let Some(key) = trailing {
+        if current >= path_parts.len() {
+            return result;
+        }
+        let mut modifying = result.remove(&key).unwrap();
+        while current < path_parts.len() {
+            let adding = path_parts.get(current).unwrap();
+            modifying.push('/');
+            modifying.push_str(adding);
+            current += 1;
+        }
+        result.insert(key, modifying.clone());
+    }
+
+    return result;
+}
+
 #[tokio::main]
 async fn main()  -> anyhow::Result<()> {
     // You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -107,11 +158,11 @@ async fn main()  -> anyhow::Result<()> {
     let listener = TcpListener::bind("127.0.0.1:4221").unwrap();
     let mut router = Router::new();
 
-    router.add_route("/", |stream, _| {
+    router.add_route("/", |stream, _, _, _| {
         send_message(stream, "HTTP/1.1 200 OK\r\n\r\n");
-    });
+    }, None);
 
-    router.add_route("/echo/:input", |stream, request| {
+    router.add_route("/echo/:input", |stream, request, _, _| {
         let path = get_path(&request);
         let payload = path.split("/echo").nth(1).unwrap_or("").to_owned();
         let trimmed = &payload[1..];
@@ -121,9 +172,9 @@ async fn main()  -> anyhow::Result<()> {
         \r\n\
         {}", trimmed.len(), trimmed);
         send_message(stream, &message);
-    }); 
+    }, None); 
 
-    router.add_route("/user-agent", |stream, request| {
+    router.add_route("/user-agent", |stream, request, _, _| {
         let headers = get_headers(request);
         let user_agent = headers.get("User-Agent").unwrap();
         let message = format!("HTTP/1.1 200 OK\r\n\
@@ -133,7 +184,27 @@ async fn main()  -> anyhow::Result<()> {
         {}", user_agent.len(), user_agent);
         println!("{}", message);
         send_message(stream, &message);
-    });
+    }, None);
+
+    
+    let dir = std::env::args().nth(3);
+
+    if let Some(target_dir) = dir {
+        let mut map: HashMap<String, String> = HashMap::new();
+        map.insert("dir".to_string(), target_dir);
+        router.add_route("/files/:path", |stream, request, state, params| {
+            let state_dict = state.unwrap();
+            let dir_string = state_dict.get("dir").unwrap();
+            let path = params.get("path").unwrap();
+            let file = std::fs::File::open(dir_string.to_owned() + path);
+            match file {
+                Ok(suc) => {
+                    println!("{:?}", suc);
+                },
+                Err(_) => not_found(stream),
+            }
+        }, Some(map));
+    }
 
     for stream in listener.incoming() {
         let other_router = router.clone();
