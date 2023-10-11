@@ -211,7 +211,7 @@ async fn main()  -> anyhow::Result<()> {
                     Content-Type: application/octet-stream\r\n\
                     Content-Length: {}\r\n\
                     \r\n\
-                    {:?}", string.len(), string);
+                    {}", string.len(), string);
                     println!("{}", message);
                     send_message(stream, &message);
                 },
