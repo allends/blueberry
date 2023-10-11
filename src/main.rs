@@ -86,6 +86,7 @@ impl Router {
 
         for route in &self.routes {
             if routes_match(path, route.path.as_str()) {
+                println!("{} against {}", path, route.path);
                 let params = get_params(path, &route.path);
                 (route.handler)(stream, request, route.state.clone(), params);
                 return;
