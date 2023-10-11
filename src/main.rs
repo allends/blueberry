@@ -92,6 +92,7 @@ impl Router {
             }
 
         }
+        println!("no matching route found");
         send_message(stream, "HTTP/1.1 404 Not Found\r\n\r\n");
     }
 }
@@ -193,6 +194,7 @@ async fn main()  -> anyhow::Result<()> {
         let mut map: HashMap<String, String> = HashMap::new();
         map.insert("dir".to_string(), target_dir);
         router.add_route("/files/:path", |stream, _request, state, params| {
+            println!("starting to get the file");
             let state_dict = state.unwrap();
             let dir_string = state_dict.get("dir").unwrap();
             let path = params.get("path").unwrap();
