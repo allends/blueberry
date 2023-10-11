@@ -202,16 +202,16 @@ async fn main()  -> anyhow::Result<()> {
             let state_dict = state.unwrap();
             let dir_string = state_dict.get("dir").unwrap();
             let path = params.get("path").unwrap();
-            let contents = std::fs::read(dir_string.to_owned() + path);
+            let contents = std::fs::read_to_string(dir_string.to_owned() + path);
 
             match contents {
-                Ok(bytes) => {
+                Ok(string) => {
 
                     let message = format!("HTTP/1.1 200 OK\r\n\
                     Content-Type: application/octet-stream\r\n\
                     Content-Length: {}\r\n\
                     \r\n\
-                    {:?}", bytes.len(), bytes);
+                    {:?}", string.len(), string);
                     println!("{}", message);
                     send_message(stream, &message);
                 },
