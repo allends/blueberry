@@ -188,6 +188,9 @@ async fn main()  -> anyhow::Result<()> {
         send_message(stream, &message);
     }, None);
 
+    for arg in std::env::args() {
+        println!("{}", arg);
+    }
     
     let dir = std::env::args().nth(3);
 
