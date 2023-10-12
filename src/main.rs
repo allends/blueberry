@@ -210,9 +210,9 @@ async fn main()  -> anyhow::Result<()> {
         let mut map: HashMap<String, String> = HashMap::new();
         map.insert("dir".to_string(), target_dir.clone());
         router.add_route("/files/:path", |stream, _request, state, params| {
-            let state_dict = state.unwrap();
-            let dir_string = state_dict.get("dir").unwrap();
-            let path = params.get("path").unwrap();
+            // let state_dict = state.unwrap();
+            // let dir_string = state_dict.get("dir").unwrap();
+            // let path = params.get("path").unwrap();
             send_message(stream, "HTTP/1.1 200 OK\r\n\r\n");
         }, Method::POST, Some(map));
     } 
