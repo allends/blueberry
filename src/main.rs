@@ -140,8 +140,8 @@ fn get_params(path: &str, route: &str) -> HashMap<String, String> {
     let length = route_parts.len();
 
     while current < length {
-        let path_part = path_parts.get(current).unwrap();
         let route_part = route_parts.get(current).unwrap();
+        let path_part = path_parts.get(current).unwrap();
         if route_part.starts_with(":") {
             let var_name = &route_part[1..];
             result.insert(var_name.to_string(), path_part.to_string());
