@@ -103,6 +103,7 @@ impl Router {
         for route in &self.routes {
             if routes_match(path, route.path.as_str()) && method == route.method {
                 let params = get_params(path, &route.path);
+                println!("{} to {}", path, route.path);
                 (route.handler)(stream, request, route.state.clone(), params);
                 return;
             }
