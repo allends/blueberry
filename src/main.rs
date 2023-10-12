@@ -139,6 +139,9 @@ fn get_params(path: &str, route: &str) -> HashMap<String, String> {
     let mut trailing: Option<String> = None;
     let length = route_parts.len();
 
+    println!("{:?}", route_parts);
+    println!("{:?}", path_parts);
+
     while current < length {
         let route_part = route_parts.get(current).unwrap();
         let path_part = path_parts.get(current).unwrap();
