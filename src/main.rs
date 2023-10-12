@@ -234,7 +234,7 @@ async fn main()  -> anyhow::Result<()> {
                 },
                 Err(_) => not_found(stream),
             }
-        }, Method::GET, Some(map));
+        }, Method::POST, Some(map));
     } 
 
     if let Some(target_dir) = path {
@@ -259,7 +259,7 @@ async fn main()  -> anyhow::Result<()> {
                 },
                 Err(_) => not_found(stream),
             }
-        }, Method::POST, Some(map));
+        }, Method::GET, Some(map));
     }
 
     for stream in listener.incoming() {
