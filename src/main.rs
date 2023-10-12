@@ -197,7 +197,7 @@ async fn main()  -> anyhow::Result<()> {
         Content-Length: {}\r\n\
         \r\n\
         {}", trimmed.len(), trimmed);
-        send_message(stream, &message);
+        send_message(stream, &message); 
     }, Method::GET ,None);
 
     router.add_route("/user-agent", |stream, request, _, _| {
