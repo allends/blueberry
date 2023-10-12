@@ -217,6 +217,9 @@ async fn main()  -> anyhow::Result<()> {
             let path = params.get("path").unwrap();
             let file_path = dir_string.to_owned() + path;
             let test = _request.split("\r\n\r\n").into_iter();
+            for test in _request.split("\r\n\r\n") {
+                println!("{}", test);
+            }
             println!("{:#?}", test);
 
             let body = _request.split("\r\n\r\n").into_iter().nth(2).unwrap();
