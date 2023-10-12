@@ -217,13 +217,12 @@ async fn main()  -> anyhow::Result<()> {
  
             let body = _request.split("\r\n\r\n").into_iter().next().unwrap();
             {
-                let mut file = File::create(file_path).unwrap();
-                file.write_all(body.as_bytes());
+                // let mut file = File::create(file_path).unwrap();
+                // file.write_all(body.as_bytes());
             }
             let message = "HTTP/1.1 201 OK\r\n\r\n";
             println!("{}", message);
             send_message(stream, &message);
-            return
         }, Method::POST, Some(map));
     } 
 
