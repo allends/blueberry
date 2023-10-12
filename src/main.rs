@@ -41,6 +41,17 @@ fn get_headers(request: String) -> HashMap<String, String> {
     return headers;
 }
 
+fn get_method(request: &str) -> Method {
+    let main_line = request.split("\r\n").into_iter().next().unwrap();
+    let method = main_line.split(" ").into_iter().next().unwrap();
+
+    match method {
+        "GET" => Method::GET,
+        "POST" => Method::POST,
+        _ => Method::GET,
+    }
+}
+
 fn not_found(stream: &mut TcpStream) {
     send_message(stream, "HTTP/1.1 404 Not Found\r\n\r\n");
 }
@@ -48,6 +59,12 @@ fn not_found(stream: &mut TcpStream) {
 type RouteState = Option<HashMap<String, String>>;
 type Params = HashMap<String, String>;
 type RouteHandler = fn(&mut TcpStream, String, RouteState, Params);
+
+#[derive(Clone, PartialEq)]
+enum Method {
+    GET,
+    POST,
+}
 
 #[derive(Clone)]
 struct Router {
@@ -58,6 +75,7 @@ struct Router {
 struct Route {
     path: String,
     handler: RouteHandler,
+    method: Method,
     state: Option<HashMap<String, String>>,
 }
 
@@ -70,11 +88,12 @@ impl Router {
         self.routes.sort_by(|a, b| b.path.len().cmp(&a.path.len()));
     }
 
-    fn add_route(&mut self, path: &str, handler: RouteHandler, state: Option<HashMap<String, String>>) {
+    fn add_route(&mut self, path: &str, handler: RouteHandler, method: Method, state: Option<HashMap<String, String>>) {
         self.routes.push(Route {
             path: path.to_string(),
             handler,
             state,
+            method
         });
 
         self.sort_routes();
@@ -83,10 +102,11 @@ impl Router {
     fn route_request(&self, stream: &mut TcpStream) {
         let request = parse_request(stream);
         let path = get_path(&request);
+        let method = get_method(&request);
 
         for route in &self.routes {
             println!("{} against {}", path, route.path);
-            if routes_match(path, route.path.as_str()) {
+            if routes_match(path, route.path.as_str()) && method == route.method {
                 let params = get_params(path, &route.path);
                 (route.handler)(stream, request, route.state.clone(), params);
                 return;
@@ -168,7 +188,7 @@ async fn main()  -> anyhow::Result<()> {
 
     router.add_route("/", |stream, _, _, _| {
         send_message(stream, "HTTP/1.1 200 OK\r\n\r\n");
-    }, None);
+    }, Method::GET ,None);
 
     router.add_route("/echo/:input", |stream, request, _, _| {
         let path = get_path(&request);
@@ -180,7 +200,7 @@ async fn main()  -> anyhow::Result<()> {
         \r\n\
         {}", trimmed.len(), trimmed);
         send_message(stream, &message);
-    }, None); 
+    }, Method::GET ,None);
 
     router.add_route("/user-agent", |stream, request, _, _| {
         let headers = get_headers(request);
@@ -192,13 +212,35 @@ async fn main()  -> anyhow::Result<()> {
         {}", user_agent.len(), user_agent);
         println!("{}", message);
         send_message(stream, &message);
-    }, None);
+    }, Method::GET ,None);
 
     if let Some(target_dir) = path {
         let mut map: HashMap<String, String> = HashMap::new();
         map.insert("dir".to_string(), target_dir.clone());
         router.add_route("/files/:path", |stream, _request, state, params| {
-            println!("starting to get the file");
+            let state_dict = state.unwrap();
+            let dir_string = state_dict.get("dir").unwrap();
+            let path = params.get("path").unwrap();
+            let file_path = dir_string.to_owned() + path;
+
+            let body = _request.split("\r\n\r\n").into_iter().nth(2).unwrap();
+            let result = std::fs::write(file_path, body);
+
+            match result {
+                Ok(_) => {
+                    let message = "HTTP/1.1 201 OK\r\n\r\n";
+                    println!("{}", message);
+                    send_message(stream, &message);
+                },
+                Err(_) => not_found(stream),
+            }
+        }, Method::GET, Some(map));
+    } 
+
+    if let Some(target_dir) = path {
+        let mut map: HashMap<String, String> = HashMap::new();
+        map.insert("dir".to_string(), target_dir.clone());
+        router.add_route("/files/:path", |stream, _request, state, params| {
             let state_dict = state.unwrap();
             let dir_string = state_dict.get("dir").unwrap();
             let path = params.get("path").unwrap();
@@ -217,8 +259,8 @@ async fn main()  -> anyhow::Result<()> {
                 },
                 Err(_) => not_found(stream),
             }
-        }, Some(map));
-    } 
+        }, Method::POST, Some(map));
+    }
 
     for stream in listener.incoming() {
         let other_router = router.clone();
