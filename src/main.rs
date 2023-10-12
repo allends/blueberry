@@ -135,9 +135,6 @@ fn get_params(path: &str, route: &str) -> HashMap<String, String> {
     let mut trailing: Option<String> = None;
     let length = route_parts.len();
 
-    println!("{:?}", route_parts);
-    println!("{} - {:?}", path, path_parts);
-
     while current < length {
         let route_part = route_parts.get(current).unwrap();
         let path_part = path_parts.get(current).unwrap();
@@ -219,7 +216,7 @@ async fn main()  -> anyhow::Result<()> {
             let dir_string = state_dict.get("dir").unwrap();
             let path = params.get("path").unwrap();
             let file_path = dir_string.to_owned() + path;
-            let test = _request.split("\r\n\r\n");
+            let test = _request.split("\r\n\r\n").into_iter();
             println!("{:#?}", test);
 
             let body = _request.split("\r\n\r\n").into_iter().nth(2).unwrap();
