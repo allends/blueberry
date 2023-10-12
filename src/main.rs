@@ -216,13 +216,8 @@ async fn main()  -> anyhow::Result<()> {
             let dir_string = state_dict.get("dir").unwrap();
             let path = params.get("path").unwrap();
             let file_path = dir_string.to_owned() + path;
-            let test = _request.split("\r\n\r\n").into_iter();
-            for test in _request.split("\r\n\r\n") {
-                println!("{}", test);
-            }
-            println!("{:#?}", test);
 
-            let body = _request.split("\r\n\r\n").into_iter().nth(2).unwrap();
+            let body = _request.split("\r\n\r\n").into_iter().next().unwrap();
             let result = std::fs::write(file_path, body);
 
             match result {
