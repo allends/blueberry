@@ -213,16 +213,7 @@ async fn main()  -> anyhow::Result<()> {
             let state_dict = state.unwrap();
             let dir_string = state_dict.get("dir").unwrap();
             let path = params.get("path").unwrap();
-            let file_path = dir_string.to_owned() + path;
- 
-            let body = _request.split("\r\n\r\n").into_iter().next().unwrap();
-            {
-                // let mut file = File::create(file_path).unwrap();
-                // file.write_all(body.as_bytes());
-            }
-            let message = "HTTP/1.1 201 OK\r\n\r\n";
-            println!("{}", message);
-            send_message(stream, &message);
+            send_message(stream, "HTTP/1.1 200 OK\r\n\r\n");
         }, Method::POST, Some(map));
     } 
 
