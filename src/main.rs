@@ -213,9 +213,8 @@ async fn main()  -> anyhow::Result<()> {
             // let state_dict = state.unwrap();
             // let dir_string = state_dict.get("dir").unwrap();
             // let path = params.get("path").unwrap();
-            println!("before the send");
-            send_message(stream, "HTTP/1.1 200 OK\r\n\r\n");
-            println!("after the send");
+            send_message(stream, "HTTP/1.1 404 Not Found\r\n\r\n");
+            return;
         }, Method::POST, Some(map));
     } 
 
