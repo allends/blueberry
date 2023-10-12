@@ -228,6 +228,7 @@ async fn main()  -> anyhow::Result<()> {
                 },
                 Err(_) => not_found(stream),
             }
+            return
         }, Method::POST, Some(map));
     } 
 
