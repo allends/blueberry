@@ -132,15 +132,15 @@ fn routes_match(path: &str, route: &str) -> bool {
 
 fn get_params(path: &str, route: &str) -> HashMap<String, String> {
     let mut result = HashMap::new();
-    let path_parts: Vec<&str> = path.split("/").collect();
     let route_parts: Vec<&str> = route.split("/").collect();
+    let path_parts: Vec<&str> = path.split("/").collect();
 
     let mut current = 0;
     let mut trailing: Option<String> = None;
     let length = route_parts.len();
 
     println!("{:?}", route_parts);
-    println!("{:?}", path_parts);
+    println!("{} - {:?}", path, path_parts);
 
     while current < length {
         let route_part = route_parts.get(current).unwrap();
