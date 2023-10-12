@@ -56,7 +56,7 @@ type RouteState = Option<HashMap<String, String>>;
 type Params = HashMap<String, String>;
 type RouteHandler = fn(&mut TcpStream, String, RouteState, Params);
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 enum Method {
     GET,
     POST,
@@ -103,7 +103,7 @@ impl Router {
         for route in &self.routes {
             if routes_match(path, route.path.as_str()) && method == route.method {
                 let params = get_params(path, &route.path);
-                println!("{} to {}", path, route.path);
+                println!("{} to {} - {:?} and {:?}", path, route.path, method, route.method);
                 (route.handler)(stream, request, route.state.clone(), params);
                 return;
             }
