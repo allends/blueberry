@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 // Uncomment this block to pass the first stage
-use std::io::{Read, Write};
+use std::io::prelude::*;
+use std::fs::File;
 use std::net::{TcpListener, TcpStream};
 
 fn send_message(stream: &mut TcpStream, message: &str) {
@@ -101,14 +102,12 @@ impl Router {
 
         for route in &self.routes {
             if routes_match(path, route.path.as_str()) && method == route.method {
-                println!("{} = {}", path, route.path);
                 let params = get_params(path, &route.path);
                 (route.handler)(stream, request, route.state.clone(), params);
                 return;
             }
 
         }
-        println!("no matching route found");
         send_message(stream, "HTTP/1.1 404 Not Found\r\n\r\n");
     }
 }
@@ -204,7 +203,6 @@ async fn main()  -> anyhow::Result<()> {
         Content-Length: {}\r\n\
         \r\n\
         {}", user_agent.len(), user_agent);
-        println!("{}", message);
         send_message(stream, &message);
     }, Method::GET ,None);
 
@@ -218,16 +216,13 @@ async fn main()  -> anyhow::Result<()> {
             let file_path = dir_string.to_owned() + path;
  
             let body = _request.split("\r\n\r\n").into_iter().next().unwrap();
-            let result = std::fs::write(file_path, body);
-
-            match result {
-                Ok(_) => {
-                    let message = "HTTP/1.1 201 OK\r\n\r\n";
-                    println!("{}", message);
-                    send_message(stream, &message);
-                },
-                Err(_) => not_found(stream),
+            {
+                let mut file = File::create(file_path).unwrap();
+                file.write_all(body.as_bytes());
             }
+            let message = "HTTP/1.1 201 OK\r\n\r\n";
+            println!("{}", message);
+            send_message(stream, &message);
             return
         }, Method::POST, Some(map));
     } 
