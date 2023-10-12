@@ -9,13 +9,8 @@ fn send_message(stream: &mut TcpStream, message: &str) {
 
 fn get_path(request: &str) -> &str {
     let lines = request.split("\r\n");
-    let mut path = "";
-    for line in lines {
-        if line.starts_with("GET") {
-            path = line.split(" ").nth(1).unwrap();
-        }
-    }
-    path
+    let main_line = lines.into_iter().next().unwrap();
+    main_line.split(" ").nth(1).unwrap()
 }
 
 fn parse_request(stream: &mut TcpStream) -> String {
