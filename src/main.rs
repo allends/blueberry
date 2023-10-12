@@ -105,7 +105,6 @@ impl Router {
         let method = get_method(&request);
 
         for route in &self.routes {
-            println!("{} against {}", path, route.path);
             if routes_match(path, route.path.as_str()) && method == route.method {
                 let params = get_params(path, &route.path);
                 (route.handler)(stream, request, route.state.clone(), params);
@@ -174,7 +173,6 @@ fn get_params(path: &str, route: &str) -> HashMap<String, String> {
 async fn main()  -> anyhow::Result<()> {
     // You can use print statements as follows for debugging, they'll be visible when running tests.
     println!("Logs from your program will appear here!");
-    println!("env args {:?}", std::env::args().collect::<Vec<String>>());
 
     let argvec = std::env::args().collect::<Vec<String>>();
     let mut argiter = argvec.iter();
@@ -222,6 +220,8 @@ async fn main()  -> anyhow::Result<()> {
             let dir_string = state_dict.get("dir").unwrap();
             let path = params.get("path").unwrap();
             let file_path = dir_string.to_owned() + path;
+            let test = _request.split("\r\n\r\n");
+            println!("{:#?}", test);
 
             let body = _request.split("\r\n\r\n").into_iter().nth(2).unwrap();
             let result = std::fs::write(file_path, body);
