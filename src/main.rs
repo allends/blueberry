@@ -152,7 +152,7 @@ fn get_params(path: &str, route: &str) -> HashMap<String, String> {
         current += 1;
     }
 
-    if let Some(key) = trailing {
+    if let Some(key) = trailing { 
         if current >= path_parts.len() {
             return result;
         }
