@@ -103,7 +103,6 @@ impl Router {
         for route in &self.routes {
             if routes_match(path, route.path.as_str()) && method == route.method {
                 let params = get_params(path, &route.path);
-                println!("{} to {} - {:?} and {:?}", path, route.path, method, route.method);
                 (route.handler)(stream, request, route.state.clone(), params);
                 return;
             }
@@ -214,7 +213,9 @@ async fn main()  -> anyhow::Result<()> {
             // let state_dict = state.unwrap();
             // let dir_string = state_dict.get("dir").unwrap();
             // let path = params.get("path").unwrap();
+            println!("before the send");
             send_message(stream, "HTTP/1.1 200 OK\r\n\r\n");
+            println!("after the send");
         }, Method::POST, Some(map));
     } 
 
