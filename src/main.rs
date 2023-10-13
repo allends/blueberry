@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 // Uncomment this block to pass the first stage
 use std::io::prelude::*;
-use std::fs::File;
 use std::net::{TcpListener, TcpStream};
 
 fn send_message(stream: &mut TcpStream, message: &str) {
@@ -209,7 +208,7 @@ async fn main()  -> anyhow::Result<()> {
     if let Some(target_dir) = path {
         let mut map: HashMap<String, String> = HashMap::new();
         map.insert("dir".to_string(), target_dir.clone());
-        router.add_route("/files/:path", |stream, _request, state, params| {
+        router.add_route("/files/:path", |stream, _request, _state, _params| {
             // let state_dict = state.unwrap();
             // let dir_string = state_dict.get("dir").unwrap();
             // let path = params.get("path").unwrap();
