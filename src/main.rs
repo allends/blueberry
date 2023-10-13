@@ -212,8 +212,11 @@ fn main()  -> anyhow::Result<()> {
             let state_dict = state.unwrap();
             let dir_string = state_dict.get("dir").unwrap();
             let path = params.get("path").unwrap();
-            println!("{}", request.split("\r\n").last().unwrap());
-            send_message(stream, "HTTP/1.1 401 Created\r\n\r\n");
+            let full_path = dir_string.to_owned() + path;
+            let contents = request.split("\r\n").last().unwrap();
+            let file_result = std::fs::write(full_path, contents);
+
+            send_message(stream, "HTTP/1.1 201 Created\r\n\r\n");
             return;
         }, Method::POST, Some(map));
     } 
