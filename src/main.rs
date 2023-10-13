@@ -2,6 +2,7 @@ use std::collections::HashMap;
 // Uncomment this block to pass the first stage
 use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
+use std::thread;
 
 fn send_message(stream: &mut TcpStream, message: &str) {
     stream.write(message.as_bytes()).unwrap();
@@ -163,8 +164,7 @@ fn get_params(path: &str, route: &str) -> HashMap<String, String> {
     return result;
 }
 
-#[tokio::main]
-async fn main()  -> anyhow::Result<()> {
+fn main()  -> anyhow::Result<()> {
     // You can use print statements as follows for debugging, they'll be visible when running tests.
     println!("Logs from your program will appear here!");
 
@@ -244,7 +244,7 @@ async fn main()  -> anyhow::Result<()> {
 
     for stream in listener.incoming() {
         let other_router = router.clone();
-        tokio::task::spawn(async move {
+        thread::spawn(move || {
             match stream {
                 Ok(mut _stream) => {
                     println!("accepted new connection");
