@@ -208,10 +208,11 @@ fn main()  -> anyhow::Result<()> {
     if let Some(target_dir) = path {
         let mut map: HashMap<String, String> = HashMap::new();
         map.insert("dir".to_string(), target_dir.clone());
-        router.add_route("/files/:path", |stream, _request, _state, _params| {
-            // let state_dict = state.unwrap();
-            // let dir_string = state_dict.get("dir").unwrap();
-            // let path = params.get("path").unwrap();
+        router.add_route("/files/:path", |stream, request, state, params| {
+            let state_dict = state.unwrap();
+            let dir_string = state_dict.get("dir").unwrap();
+            let path = params.get("path").unwrap();
+            println!("{}", request);
             send_message(stream, "HTTP/1.1 404 Not Found\r\n\r\n");
             return;
         }, Method::POST, Some(map));
