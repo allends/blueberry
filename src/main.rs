@@ -253,7 +253,7 @@ async fn main()  -> anyhow::Result<()> {
                 Err(e) => {
                     println!("error: {}", e);
                 }
-            }
+            } 
         });
         
     }
