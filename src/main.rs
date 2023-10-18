@@ -9,7 +9,7 @@ mod request;
 
 fn send_message(stream: &mut TcpStream, message: &str) {
     stream.write(message.as_bytes()).unwrap();
-}
+} 
 
 fn get_path(request: &str) -> &str {
     let lines = request.split("\r\n");
