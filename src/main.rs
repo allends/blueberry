@@ -4,6 +4,9 @@ use std::io::prelude::*;
 use std::net::{TcpListener, TcpStream};
 use std::thread;
 
+mod router;
+mod request;
+
 fn send_message(stream: &mut TcpStream, message: &str) {
     stream.write(message.as_bytes()).unwrap();
 }
