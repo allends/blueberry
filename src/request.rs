@@ -1,3 +1,4 @@
+use std::io::Write;
 use std::{collections::HashMap, io::Read};
 use std::net::TcpStream;
 
@@ -30,6 +31,11 @@ impl Request {
             headers,
             body,
         }
+    }
+
+    pub fn send_message(&self, stream: &mut TcpStream, message: &str) {
+        stream.write(message.as_bytes()).unwrap();
+        stream.flush().unwrap();
     }
 
     pub fn from_stream(stream: &mut TcpStream) -> anyhow::Result<Request> {

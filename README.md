@@ -1,39 +1,55 @@
-[![progress-banner](https://backend.codecrafters.io/progress/http-server/04d78b32-7940-4d79-8efd-9c93b4a1d276)](https://app.codecrafters.io/users/allends?r=2qF)
+# Blueberry
 
-This is a starting point for Rust solutions to the
-["Build Your Own HTTP server" Challenge](https://app.codecrafters.io/courses/http-server/overview).
+A minimal framework to write HTTP servers.
 
-[HTTP](https://en.wikipedia.org/wiki/Hypertext_Transfer_Protocol) is the
-protocol that powers the web. In this challenge, you'll build a HTTP/1.1 server
-that is capable of serving multiple clients.
+Example app
+```rust
+use request::Method;
+use router::Router;
 
-Along the way you'll learn about TCP servers,
-[HTTP request syntax](https://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html),
-and more.
+mod request;
+mod router;
 
-**Note**: If you're viewing this repo on GitHub, head over to
-[codecrafters.io](https://codecrafters.io) to try the challenge.
+// This is the function signature of an endpoint
+fn test_endpoint(
+    stream: &mut std::net::TcpStream,
+    request: request::Request,
+    _state: Option<std::collections::HashMap<String, String>>,
+    params: std::collections::HashMap<String, String>,
+) {
+    let id = params.get("id").unwrap();
+    let message = format!(
+        "HTTP/1.1 200 OK\r\n\
+    Content-Type: text/plain\r\n\
+    Content-Length: {}\r\n\
+    \r\n\
+    {}",
+        id.len(),
+        id
+    );
+    request.send_message(stream, &message);
+}
 
-# Passing the first stage
+fn main() -> anyhow::Result<()> {
+   let mut router = Router::new();
 
-The entry point for your HTTP server implementation is in `src/main.rs`. Study
-and uncomment the relevant code, and push your changes to pass the first stage:
+   // add routes via closure
+   router.add_route("/", Method::GET, |stream, request, _, _| {
+      request.send_message(stream, "HTTP/1.1 200 OK\r\n\r\n");
+   });
 
-```sh
-git add .
-git commit -m "pass 1st stage" # any msg
-git push origin master
+   // add routes via handler
+   router.add_route("/allen/:id", Method::GET, test_endpoint);
+
+   // middleware runs before each request
+   router.add_middleware(|_, request, _, _| {
+      println!("got request: {:#?}", request);
+   });
+
+   // load static html or other files you want to serve
+   router.load_file_routes(path.unwrap_or(&"./src/pages".to_string()))?;
+
+   // listen for clients to serve
+   router.listen(Some("3000".to_string()))
+}
 ```
-
-Time to move on to the next stage!
-
-# Stage 2 & beyond
-
-Note: This section is for stages 2 and beyond.
-
-1. Ensure you have `cargo (1.70)` installed locally
-1. Run `./your_server.sh` to run your program, which is implemented in
-   `src/main.rs`. This command compiles your Rust project, so it might be slow
-   the first time you run it. Subsequent runs will be fast.
-1. Commit your changes and run `git push origin master` to submit your solution
-   to CodeCrafters. Test output will be streamed to your terminal.

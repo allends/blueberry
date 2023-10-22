@@ -1,23 +1,15 @@
-# DON'T EDIT THIS!
-#
-# Codecrafters relies on this file being intact to run tests successfully. Any changes
-# here will not reflect when CodeCrafters tests your code, and might even cause build
-# failures.
-#
-# DON'T EDIT THIS!
 [package]
-name = "http-server-starter-rust"
+name = "blueberry"
 version = "0.1.0"
-authors = ["Codecrafters <hello@codecrafters.io>"]
+authors = ["Allen <allen.davisswing@gmail.com>"]
 edition = "2021"
+description = "A minimal backend framework focused on simplicity"
+license = "MIT"
+repository = "https://github.com/allends/blueberry.git"
+readme = "README.md"
+homepage = "https://github.com/allends/blueberry.git"
 
-# DON'T EDIT THIS!
-#
-# Codecrafters relies on this file being intact to run tests successfully. Any changes
-# here will not reflect when CodeCrafters tests your code, and might even cause build
-# failures.
-#
-# DON'T EDIT THIS!
+
 [dependencies]
 anyhow = "1.0.59"                                   # error handling
 bytes = "1.3.0"                                     # helps manage buffers
